@@ -1,90 +1,983 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CYBER SENSE — Escape the Pixel World</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><rect width=%2216%22 height=%2216%22 fill=%22%23080b16%22/><rect x=%224%22 y=%224%22 width=%228%22 height=%228%22 fill=%22%232ee6d6%22/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#080b16; --navy2:#0e1428; --navy3:#141b34;
+  --cyan:#2ee6d6; --cyan-dim:#12665f;
+  --purple:#a45ee5; --purple-dim:#4f2c7a;
+  --yellow:#ffcc33; --orange:#ff9a33;
+  --red:#ff3b5c; --red-dim:#7a0d1f;
+  --text:#e9edf9; --text-dim:#8a92b3;
+  --black:#020308; --skin:#e8b98a;
+  color-scheme:dark; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit;}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+body{margin:0; min-height:100%; background:var(--navy); color:var(--text); font-family:'VT323',monospace; font-size:20px; overflow-x:hidden; position:relative;}
+.font-head{font-family:'Press Start 2P',monospace; letter-spacing:1px; line-height:1.6;}
 
-    <title>CYBER SENSE</title>
+.pixel-box{clip-path:polygon(0 10px,10px 10px,10px 0,calc(100% - 10px) 0,calc(100% - 10px) 10px,100% 10px,100% calc(100% - 10px),calc(100% - 10px) calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,10px calc(100% - 10px),0 calc(100% - 10px));}
+.pixel-box-sm{clip-path:polygon(0 6px,6px 6px,6px 0,calc(100% - 6px) 0,calc(100% - 6px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 6px) calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 6px),0 calc(100% - 6px));}
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+#crt{position:fixed; inset:0; pointer-events:none; z-index:999; background:repeating-linear-gradient(to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,.18) 3px, rgba(0,0,0,0) 4px); mix-blend-mode:overlay; opacity:.5;}
+#crt::after{content:''; position:absolute; inset:0; background:radial-gradient(ellipse at center, rgba(46,230,214,.05) 0%, rgba(0,0,0,.35) 100%);}
+@keyframes flicker{0%,100%{opacity:.5;}50%{opacity:.42;}}
+#crt{animation:flicker 6s infinite steps(2);}
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background: #0D1424;
-            color: #E9E5D8;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        }
+#app{position:relative; min-height:100%; height:100%; max-width:920px; margin:0 auto; padding:14px 14px 40px; display:flex; flex-direction:column;}
+.screen{display:none; flex:1; flex-direction:column;}
+.screen.active{display:flex;}
+.bg-grid{background-image:linear-gradient(rgba(46,230,214,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(46,230,214,.06) 1px, transparent 1px); background-size:26px 26px;}
 
-        .container {
-            padding: 40px;
-        }
+.btn{font-family:'Press Start 2P',monospace; font-size:12px; color:var(--navy); background:var(--cyan); border:none; padding:14px 18px; cursor:pointer; text-align:center; transition:transform .08s ease, filter .15s ease; box-shadow:0 4px 0 var(--cyan-dim);}
+.btn:hover{filter:brightness(1.12);}
+.btn:active{transform:translateY(3px); box-shadow:0 1px 0 var(--cyan-dim);}
+.btn:focus-visible{outline:3px solid var(--yellow); outline-offset:3px;}
+.btn.secondary{background:var(--navy3); color:var(--cyan); box-shadow:0 4px 0 #000; border:2px solid var(--cyan-dim);}
+.btn.danger{background:var(--red); color:var(--black); box-shadow:0 4px 0 var(--red-dim);}
+.btn.warn{background:var(--yellow); color:var(--navy); box-shadow:0 4px 0 #a1740c;}
+.btn.purple{background:var(--purple); color:var(--black); box-shadow:0 4px 0 var(--purple-dim);}
+.btn:disabled{opacity:.35; cursor:not-allowed; filter:none;}
+.btn-row{display:flex; gap:10px; flex-wrap:wrap;}
 
-        h1 {
-            font-size: 48px;
-            margin: 0 0 15px;
-            letter-spacing: 4px;
-            color: #35BBD6;
-        }
+.panel{background:var(--navy2); border:3px solid var(--cyan-dim); padding:18px;}
 
-        h2 {
-            font-size: 20px;
-            margin-bottom: 30px;
-            color: #F5C84C;
-        }
+/* START */
+#screen-start{align-items:center; justify-content:center; text-align:center; gap:28px; min-height:90vh;}
+.logo{font-family:'Press Start 2P',monospace; font-size:clamp(28px,7vw,46px); color:var(--cyan); text-shadow:3px 3px 0 var(--purple-dim), 0 0 18px rgba(46,230,214,.5);}
+@keyframes glitch{0%{transform:translate(0,0);}20%{transform:translate(-2px,1px); text-shadow:-3px 2px 0 var(--red);}40%{transform:translate(2px,-1px); text-shadow:3px -2px 0 var(--cyan);}60%{transform:translate(-1px,0);}100%{transform:translate(0,0);}}
+.logo.glitching{animation:glitch .35s steps(2) 2;}
+.tagline{font-family:'Press Start 2P',monospace; font-size:clamp(10px,2.4vw,14px); color:var(--yellow);}
+.danger-strip{font-size:16px; color:var(--text-dim); max-width:520px; line-height:1.7;}
+@keyframes pulse{0%,100%{box-shadow:0 4px 0 var(--cyan-dim);}50%{box-shadow:0 4px 0 var(--cyan-dim), 0 0 24px rgba(46,230,214,.6);}}
+#btn-start{animation:pulse 2s infinite; padding:20px 34px; font-size:15px;}
 
-        p {
-            font-size: 16px;
-            line-height: 1.6;
-        }
+/* CINEMATIC */
+#screen-cinematic{align-items:center; justify-content:center; text-align:center; gap:26px; min-height:90vh; background:#000; cursor:pointer;}
+.cine-line{font-family:'Press Start 2P',monospace; font-size:clamp(14px,3.6vw,22px); color:var(--cyan); max-width:640px; line-height:1.7; text-shadow:0 0 14px rgba(46,230,214,.5);}
+.cine-line.null-line{color:var(--red); text-shadow:0 0 14px rgba(255,59,92,.6);}
+.gate-graphic{width:140px; height:170px; background:var(--navy2); border:6px solid var(--yellow); position:relative;}
+.gate-graphic::before{content:''; position:absolute; inset:14px; background:repeating-linear-gradient(45deg, var(--navy3) 0 8px, var(--navy2) 8px 16px);}
+.null-silhouette{width:90px; height:90px; background:radial-gradient(circle at 50% 40%, #1a0e26 0%, #000 70%); border:3px solid var(--purple); position:relative; animation:glitch .5s steps(2) infinite;}
+.null-silhouette::before,.null-silhouette::after{content:''; position:absolute; top:32px; width:12px; height:12px; background:var(--red); box-shadow:0 0 8px var(--red);}
+.null-silhouette::before{left:22px;} .null-silhouette::after{right:22px;}
+.cine-progress{font-size:14px; color:var(--text-dim);}
 
-        .box {
-            border: 2px solid #35BBD6;
-            padding: 30px;
-            max-width: 500px;
-            margin: auto;
-        }
+/* CHAR SELECT / NAME / avatar (shared) */
+.char-grid{display:flex; gap:24px; justify-content:center; flex-wrap:wrap; margin:20px 0;}
+.char-card{width:180px; padding:18px 12px 16px; background:var(--navy2); border:3px solid var(--navy3); cursor:pointer; text-align:center; transition:border-color .15s, transform .1s;}
+.char-card:hover{transform:translateY(-3px);}
+.char-card.selected{border-color:var(--cyan); box-shadow:0 0 0 3px rgba(46,230,214,.25), 0 0 18px rgba(46,230,214,.55); animation:selectPulse .6s ease;}
+@keyframes selectPulse{0%{transform:scale(1);}40%{transform:scale(1.06);}100%{transform:scale(1);}}
+.char-label{font-family:'Press Start 2P',monospace; font-size:11px; color:var(--text-dim); margin-top:12px;}
+.char-card.selected .char-label{color:var(--cyan);}
+.pixel-avatar{width:110px; height:150px; margin:0 auto; position:relative;}
+.pa-head{position:absolute; left:20px; top:38px; width:70px; height:60px; background:var(--skin);}
+.pa-eye{position:absolute; width:9px; height:9px; background:var(--cyan); top:66px; box-shadow:0 0 6px var(--cyan);}
+.pa-eye.l{left:34px;} .pa-eye.r{left:66px;}
+.pa-body{position:absolute; left:8px; top:96px; width:94px; height:54px;}
+.pa-collar{position:absolute; left:44px; top:96px; width:22px; height:10px;}
+.pa-hair-m{position:absolute; left:14px; top:20px; width:82px; height:28px; background:var(--purple-dim);}
+.pa-hair-m::after{content:''; position:absolute; left:-4px; top:14px; width:12px; height:34px; background:var(--purple-dim);}
+.pa-hair-f{position:absolute; left:8px; top:18px; width:94px; height:24px; background:var(--cyan-dim);}
+.pa-hair-f::before{content:''; position:absolute; left:-6px; top:10px; width:14px; height:70px; background:var(--cyan-dim);}
+.pa-hair-f::after{content:''; position:absolute; right:-6px; top:10px; width:14px; height:70px; background:var(--cyan-dim);}
+.avatar-male .pa-body{background:var(--purple);} .avatar-male .pa-collar{background:var(--cyan);}
+.avatar-female .pa-body{background:var(--cyan-dim);} .avatar-female .pa-collar{background:var(--purple);}
 
-        .loading {
-            margin-top: 25px;
-            color: #F47B35;
-        }
-    </style>
+#screen-name{align-items:center; justify-content:center; text-align:center; gap:22px; min-height:80vh;}
+.name-input{font-family:'VT323',monospace; font-size:26px; text-align:center; background:var(--navy2); border:3px solid var(--cyan-dim); color:var(--cyan); padding:12px 16px; width:min(320px,80vw); letter-spacing:2px;}
+.name-input:focus{outline:2px solid var(--cyan); border-color:var(--cyan);}
+
+/* HUD */
+#game-header{position:sticky; top:0; z-index:50; background:rgba(8,11,22,.95); border-bottom:3px solid var(--cyan-dim); padding:10px 12px calc(10px + env(safe-area-inset-top,0px)); margin:-14px -14px 16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+#game-header .who{font-family:'Press Start 2P',monospace; font-size:11px; color:var(--text); white-space:nowrap;}
+.score-wrap{flex:2; min-width:170px;}
+.score-label{font-size:11px; letter-spacing:1px; color:var(--text-dim); display:flex; justify-content:space-between; font-family:'Press Start 2P',monospace;}
+.score-bar-outer{height:18px; background:var(--black); border:2px solid var(--navy3); margin-top:4px;}
+.score-bar-inner{height:100%; width:50%; transition:width .5s ease, background-color .5s ease;}
+.score-state{font-family:'Press Start 2P',monospace; font-size:9px; padding:6px 8px; white-space:nowrap;}
+.coin-wrap{font-family:'Press Start 2P',monospace; font-size:13px; color:var(--yellow); white-space:nowrap; display:flex; align-items:center; gap:6px;}
+.coin-wrap .coin-icon{font-size:16px;}
+.coin-wrap.bump{animation:coinBump .35s ease;}
+@keyframes coinBump{0%{transform:scale(1);}40%{transform:scale(1.25);}100%{transform:scale(1);}}
+
+/* HOME */
+#screen-home{align-items:center; justify-content:center; text-align:center; gap:22px; min-height:70vh;}
+.home-avatar-wrap{transform:scale(1.25);}
+#btn-play{padding:22px 40px; font-size:16px;}
+
+/* ROUND SELECT */
+.section-head{font-family:'Press Start 2P',monospace; font-size:15px; color:var(--cyan); margin:0 0 4px;}
+.section-sub{color:var(--text-dim); font-size:16px; margin:0 0 14px;}
+.round-grid{display:flex; gap:22px; flex-wrap:wrap; justify-content:center; margin-top:10px;}
+.round-card{width:220px; background:var(--navy2); border:3px solid var(--navy3); padding:18px; text-align:center; cursor:pointer; transition:border-color .15s;}
+.round-card:hover{border-color:var(--cyan-dim);}
+.round-icon{width:88px; height:88px; margin:0 auto 12px; position:relative; background:#1a1f33;}
+.round-icon .glyph{position:absolute; inset:14px; background:#050608;}
+.round-card.done{border-color:var(--cyan); box-shadow:0 0 14px rgba(46,230,214,.35);}
+.round-card[data-round="trap"].done .round-icon .glyph{background:linear-gradient(135deg,var(--red),var(--orange));}
+.round-card[data-round="link"].done .round-icon .glyph{background:linear-gradient(135deg,var(--cyan),var(--purple));}
+.round-card[data-round="key"].done .round-icon .glyph{background:linear-gradient(135deg,var(--yellow),var(--orange));}
+@keyframes badgePop{0%{transform:scale(.3) rotate(-8deg); filter:brightness(3);}60%{transform:scale(1.15) rotate(4deg);}100%{transform:scale(1) rotate(0);}}
+.round-icon.just-unlocked{animation:badgePop .5s ease;}
+.round-title{font-family:'Press Start 2P',monospace; font-size:12px; margin-bottom:6px;}
+.round-sub{font-size:15px; color:var(--text-dim);}
+.round-card.done .round-sub{color:var(--cyan);}
+.gate-card{width:220px; background:var(--navy2); border:3px solid var(--purple-dim); padding:18px; text-align:center; cursor:pointer;}
+.gate-card.locked{opacity:.5; cursor:not-allowed;}
+.gate-card:not(.locked):hover{border-color:var(--purple);}
+
+/* SCENARIO ENGINE */
+.device-frame{background:var(--navy2); border:3px solid var(--navy3); padding:16px; flex:1; display:flex; flex-direction:column; gap:14px; min-height:420px;}
+.scenario-progress{font-size:14px; color:var(--text-dim); text-align:right;}
+.notify-box{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; flex:1; text-align:center;}
+.notify-badge{font-family:'Press Start 2P',monospace; font-size:12px; background:var(--cyan-dim); color:var(--cyan); padding:14px 18px; border:2px solid var(--cyan); cursor:pointer; animation:bounce 1s infinite;}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+.scenario-card{background:var(--navy3); border:2px solid #232b4a; padding:16px; display:flex; flex-direction:column; gap:12px;}
+.scenario-meta{font-size:16px; color:var(--text-dim); border-bottom:2px dashed #232b4a; padding-bottom:10px; display:flex; flex-direction:column; gap:4px;}
+.scenario-title{font-family:'Press Start 2P',monospace; font-size:13px; color:var(--text);}
+.scenario-body{font-size:19px; line-height:1.6;}
+.clue-row{display:flex; gap:8px; flex-wrap:wrap;}
+.clue-btn{font-family:'Press Start 2P',monospace; font-size:10px; background:var(--navy); color:var(--cyan-dim); border:2px solid var(--cyan-dim); padding:8px 10px; cursor:pointer;}
+.clue-btn:hover{border-color:var(--cyan); color:var(--cyan);}
+.clue-btn.checked{color:var(--cyan); border-color:var(--cyan);}
+.decision-row{display:flex; gap:10px; flex-wrap:wrap; margin-top:auto;}
+.decision-btn{font-family:'Press Start 2P',monospace; font-size:11px; padding:12px 14px; cursor:pointer; border:none;}
+.decision-btn.cta{background:var(--red); color:#fff; box-shadow:0 4px 0 var(--red-dim);}
+.decision-btn.other{background:var(--navy); color:var(--cyan); border:2px solid var(--cyan-dim);}
+.decision-btn.other:hover{border-color:var(--cyan);}
+.decision-btn:disabled{opacity:.35; cursor:not-allowed;}
+
+.consequence{padding:22px; text-align:center; display:flex; flex-direction:column; gap:12px; align-items:center; flex:1; justify-content:center;}
+.consequence h3{font-family:'Press Start 2P',monospace; font-size:16px;}
+.consequence.good h3{color:var(--cyan);} .consequence.bad h3{color:var(--red);} .consequence.neutral h3{color:var(--yellow);}
+.consequence p{font-size:19px; max-width:480px; line-height:1.6; color:var(--text-dim); margin:0;}
+.type-reveal{font-family:'Press Start 2P',monospace; font-size:11px; padding:6px 10px;}
+.type-reveal.fake{background:var(--red); color:#fff;} .type-reveal.real{background:var(--cyan); color:var(--navy);}
+.delta-row{display:flex; gap:14px; font-family:'Press Start 2P',monospace; font-size:12px;}
+.delta-pos{color:var(--cyan);} .delta-neg{color:var(--red);}
+.null-box{display:flex; align-items:center; gap:12px; background:#100819; border:2px solid var(--purple); padding:10px 14px; margin-top:6px;}
+.null-box .mini-null{width:44px; height:44px; flex-shrink:0; background:radial-gradient(circle at 50% 40%, #1a0e26 0%, #000 70%); border:2px solid var(--purple); position:relative;}
+.null-box .mini-null::before,.null-box .mini-null::after{content:''; position:absolute; top:15px; width:6px; height:6px; background:var(--red);}
+.null-box .mini-null::before{left:10px;} .null-box .mini-null::after{right:10px;}
+.null-box .quote{font-family:'Press Start 2P',monospace; font-size:11px; color:var(--purple); text-align:left;}
+
+/* GAME OVER */
+#screen-gameover{align-items:center; justify-content:center; text-align:center; gap:20px; min-height:90vh; background:#040106;}
+#screen-gameover .go-title{font-family:'Press Start 2P',monospace; font-size:clamp(22px,6vw,34px); color:var(--red); text-shadow:0 0 20px rgba(255,59,92,.6);}
+#screen-gameover .go-sub{font-family:'Press Start 2P',monospace; font-size:13px; color:var(--text-dim);}
+#screen-gameover .go-stats{font-size:19px; color:var(--text-dim);}
+
+/* EXIT GATE */
+#screen-exitgate{align-items:center; justify-content:center; text-align:center; gap:20px; min-height:80vh;}
+.gate-big{width:180px; height:220px; background:var(--navy2); border:8px solid var(--yellow); position:relative;}
+.gate-big::before{content:''; position:absolute; inset:16px; background:repeating-linear-gradient(45deg, var(--navy3) 0 10px, var(--navy2) 10px 20px);}
+.gate-big.open{border-color:var(--cyan); box-shadow:0 0 30px rgba(46,230,214,.6);}
+.gate-req{font-family:'Press Start 2P',monospace; font-size:14px; color:var(--yellow);}
+.gate-current{font-family:'Press Start 2P',monospace; font-size:12px; color:var(--text-dim);}
+
+/* PROFILE / CARD */
+.stat-row{margin-bottom:14px;}
+.stat-row .stat-label{display:flex; justify-content:space-between; font-family:'Press Start 2P',monospace; font-size:10px; margin-bottom:4px;}
+.stat-bar-outer{height:14px; background:var(--black); border:2px solid var(--navy3);}
+.stat-bar-inner{height:100%; background:var(--cyan);}
+.id-card{width:min(360px,92%); margin:0 auto; background:linear-gradient(160deg,#0e1428,#131a34); border:3px solid var(--cyan); padding:20px; display:flex; flex-direction:column; gap:10px; align-items:center; text-align:center; box-shadow:0 0 30px rgba(46,230,214,.25);}
+.id-card .id-logo{font-family:'Press Start 2P',monospace; font-size:14px; color:var(--cyan);}
+.id-card .id-role{font-family:'Press Start 2P',monospace; font-size:10px; color:var(--yellow);}
+.id-card .id-name{font-size:26px; color:var(--text);}
+.id-card .id-score{font-family:'Press Start 2P',monospace; font-size:12px; color:var(--red);}
+.id-card .id-coins{font-family:'Press Start 2P',monospace; font-size:12px; color:var(--yellow);}
+.id-badges{display:flex; gap:10px; margin-top:6px;}
+.id-badges .mini-badge{width:36px; height:36px;}
+.id-card .id-tag{font-size:14px; color:var(--text-dim); font-family:'Press Start 2P',monospace; margin-top:6px;}
+
+#toast-wrap{position:fixed; top:70px; left:50%; transform:translateX(-50%); z-index:300; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;}
+.toast{font-family:'Press Start 2P',monospace; font-size:12px; padding:10px 16px; white-space:nowrap; animation:floatUp 1.8s ease forwards;}
+.toast.pos{background:var(--cyan); color:var(--navy);} .toast.neg{background:var(--red); color:#fff;} .toast.coin{background:var(--yellow); color:var(--navy);}
+@keyframes floatUp{0%{opacity:0; transform:translateY(10px);}15%{opacity:1; transform:translateY(0);}80%{opacity:1;}100%{opacity:0; transform:translateY(-18px);}}
+
+#popup-overlay{position:fixed; inset:0; background:rgba(2,3,8,.78); display:none; align-items:center; justify-content:center; z-index:200; padding:16px;}
+#popup-overlay.active{display:flex;}
+#popup{background:var(--navy2); border:3px solid var(--cyan); max-width:420px; width:100%; padding:20px; position:relative;}
+#popup h4{font-family:'Press Start 2P',monospace; font-size:13px; color:var(--cyan); margin:0 0 12px;}
+#popup p{font-size:18px; line-height:1.6; margin:0 0 8px;}
+#popup .close-x{position:absolute; top:10px; right:10px; background:none; border:none; color:var(--text-dim); font-family:'Press Start 2P',monospace; font-size:14px; cursor:pointer;}
+#popup .close-x:hover{color:var(--red);}
+
+footer.controls{display:flex; justify-content:space-between; margin-top:18px; gap:10px; flex-wrap:wrap;}
+
+@media (max-width:560px){
+  body{font-size:18px;}
+  .round-grid{gap:14px;}
+  .round-card,.gate-card{width:100%; max-width:280px;}
+  .decision-row{flex-direction:column;}
+  .decision-btn{width:100%;}
+}
+</style>
 </head>
-
 <body>
+<div id="crt" aria-hidden="true"></div>
+<div id="toast-wrap" aria-live="polite"></div>
 
-    <div class="container">
+<div id="popup-overlay">
+  <div id="popup" role="dialog" aria-modal="true">
+    <button class="close-x" id="popup-close">[ X ]</button>
+    <h4 id="popup-title">TITLE</h4>
+    <div id="popup-body"></div>
+  </div>
+</div>
 
-        <div class="box">
+<div id="app">
 
-            <h1>CYBER SENSE</h1>
+  <!-- START -->
+  <section class="screen active bg-grid" id="screen-start">
+    <div class="logo" id="logo-text">CYBER SENSE</div>
+    <div class="tagline">THINK. CHECK. THEN CLICK.</div>
+    <p class="danger-strip">A world full of danger hides inside every inbox, link and login. Step inside the Pixel World, protect your coins, and find your way home.</p>
+    <button class="btn pixel-box" id="btn-start">▶ START</button>
+  </section>
 
-            <h2>THINK. CHECK. THEN CLICK.</h2>
+  <!-- CINEMATIC -->
+  <section class="screen" id="screen-cinematic">
+    <div id="cine-visual"></div>
+    <div class="cine-line" id="cine-text">...</div>
+    <div class="cine-progress" id="cine-progress"></div>
+    <button class="btn pixel-box" id="btn-cine-next">NEXT ▶</button>
+  </section>
 
-            <p>
-                Chào mừng bạn đến với CYBER SENSE.
-            </p>
-
-            <p>
-                Một thế giới Pixel nơi những nguy hiểm
-                trên Internet được ẩn giấu.
-            </p>
-
-            <p class="loading">
-                GAME IS COMING SOON...
-            </p>
-
+  <!-- CHARACTER SELECT -->
+  <section class="screen bg-grid" id="screen-character">
+    <h2 class="section-head">CHOOSE YOUR CHARACTER</h2>
+    <p class="section-sub">Select who will explore the Pixel World with you.</p>
+    <div class="char-grid">
+      <div class="char-card" data-gender="male" tabindex="0" role="button" aria-pressed="false">
+        <div class="pixel-avatar avatar-male">
+          <div class="pa-body"></div><div class="pa-collar"></div><div class="pa-head"></div>
+          <div class="pa-eye l"></div><div class="pa-eye r"></div><div class="pa-hair-m"></div>
         </div>
-
+        <div class="char-label">MALE</div>
+      </div>
+      <div class="char-card" data-gender="female" tabindex="0" role="button" aria-pressed="false">
+        <div class="pixel-avatar avatar-female">
+          <div class="pa-body"></div><div class="pa-collar"></div><div class="pa-head"></div>
+          <div class="pa-eye l"></div><div class="pa-eye r"></div><div class="pa-hair-f"></div>
+        </div>
+        <div class="char-label">FEMALE</div>
+      </div>
     </div>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn pixel-box" id="btn-confirm-char" disabled>CONFIRM</button>
+    </div>
+  </section>
 
+  <!-- NAME INPUT -->
+  <section class="screen bg-grid" id="screen-name">
+    <h2 class="section-head">ENTER YOUR NAME</h2>
+    <input class="name-input pixel-box-sm" id="input-name" maxlength="14" placeholder="PLAYER" autocomplete="off">
+    <button class="btn pixel-box" id="btn-confirm-name">CONFIRM</button>
+  </section>
+
+  <!-- HOME -->
+  <section class="screen bg-grid" id="screen-home">
+    <div id="home-header-slot"></div>
+    <div class="home-avatar-wrap">
+      <div class="pixel-avatar" id="home-avatar">
+        <div class="pa-body"></div><div class="pa-collar"></div><div class="pa-head"></div>
+        <div class="pa-eye l"></div><div class="pa-eye r"></div>
+      </div>
+    </div>
+    <div class="font-head" style="font-size:16px;color:var(--cyan);" id="home-name">PLAYER</div>
+    <button class="btn pixel-box" id="btn-play">PLAY</button>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn secondary pixel-box-sm" id="btn-home-profile">PROFILE</button>
+      <button class="btn secondary pixel-box-sm" id="btn-home-gate">EXIT STATUS</button>
+    </div>
+  </section>
+
+  <!-- ROUND SELECT -->
+  <section class="screen bg-grid" id="screen-round-select">
+    <div id="rs-header-slot"></div>
+    <h2 class="section-head">ROUND SELECT</h2>
+    <p class="section-sub">Investigate each mission. Not everything is a trap — but not everything is safe.</p>
+    <div class="round-grid">
+      <div class="round-card" data-round="trap" tabindex="0" role="button">
+        <div class="round-icon"><div class="glyph"></div></div>
+        <div class="round-title">THE TRAP</div>
+        <div class="round-sub" data-orig="Phishing &amp; scams">Phishing &amp; scams</div>
+      </div>
+      <div class="round-card" data-round="link" tabindex="0" role="button">
+        <div class="round-icon"><div class="glyph"></div></div>
+        <div class="round-title">THE LINK</div>
+        <div class="round-sub" data-orig="Suspicious websites">Suspicious websites</div>
+      </div>
+      <div class="round-card" data-round="key" tabindex="0" role="button">
+        <div class="round-icon"><div class="glyph"></div></div>
+        <div class="round-title">THE KEY</div>
+        <div class="round-sub" data-orig="OTP &amp; account">OTP &amp; account</div>
+      </div>
+      <div class="gate-card pixel-box-sm locked" id="gate-card">
+        <div class="round-icon"><div class="glyph" style="background:linear-gradient(135deg,var(--purple),var(--cyan));"></div></div>
+        <div class="round-title">EXIT GATE</div>
+        <div class="round-sub" id="gate-card-sub">Complete all missions</div>
+      </div>
+    </div>
+    <footer class="controls">
+      <button class="btn secondary pixel-box-sm" data-goto="screen-home">◀ HOME</button>
+      <span></span>
+    </footer>
+  </section>
+
+  <!-- SCENARIO ENGINE (shared by all 3 rounds) -->
+  <section class="screen" id="screen-scenario">
+    <div id="scenario-header-slot"></div>
+    <div class="scenario-progress" id="scenario-progress"></div>
+    <div class="device-frame" id="scenario-frame"></div>
+  </section>
+
+  <!-- EXIT GATE -->
+  <section class="screen bg-grid" id="screen-exitgate">
+    <h2 class="section-head">EXIT GATE</h2>
+    <div class="gate-big" id="gate-big"></div>
+    <div class="gate-req" id="gate-req">🪙 REQUIRED: 300</div>
+    <div class="gate-current" id="gate-current">CURRENT: 0</div>
+    <div id="gate-result" class="section-sub"></div>
+    <div class="btn-row" id="gate-actions" style="justify-content:center;"></div>
+  </section>
+
+  <!-- GAME OVER -->
+  <section class="screen" id="screen-gameover">
+    <div class="go-title">GAME OVER</div>
+    <div class="go-sub">NULL STOLE YOUR CHANCE.</div>
+    <div class="go-stats" id="go-stats">SAFETY SCORE: 0 / 100<br>COINS: 0</div>
+    <p class="section-sub" style="max-width:420px;">You made too many unsafe decisions. NULL took advantage of it — but the Pixel World will let you try again.</p>
+    <div class="btn-row" style="justify-content:center;">
+      <button class="btn danger pixel-box" id="btn-try-again">TRY AGAIN</button>
+      <button class="btn secondary pixel-box" id="btn-return-menu">RETURN TO MENU</button>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section class="screen bg-grid" id="screen-profile">
+    <h2 class="section-head">CYBER PROFILE</h2>
+    <div class="panel pixel-box" style="max-width:520px; margin:0 auto; width:100%;">
+      <div style="text-align:center; margin-bottom:6px;">
+        <div class="pixel-avatar" id="profile-avatar" style="margin:0 auto; transform:scale(1.1);">
+          <div class="pa-body"></div><div class="pa-collar"></div><div class="pa-head"></div>
+          <div class="pa-eye l"></div><div class="pa-eye r"></div>
+        </div>
+        <div class="font-head" style="font-size:15px; margin-top:8px;" id="profile-name">PLAYER</div>
+        <div class="font-head" style="font-size:11px; color:var(--yellow);">CYBER EXPLORER</div>
+        <div class="font-head" style="font-size:12px; color:var(--red); margin-top:6px;" id="profile-score">SAFETY SCORE: 50</div>
+        <div class="font-head" style="font-size:12px; color:var(--yellow); margin-top:4px;" id="profile-coins">🪙 COINS: 0</div>
+      </div>
+      <div style="margin-top:18px;">
+        <div class="stat-row">
+          <div class="stat-label"><span>PHISHING RADAR</span><span id="stat-trap-val">0%</span></div>
+          <div class="stat-bar-outer"><div class="stat-bar-inner" id="stat-trap-bar"></div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label"><span>LINK SENSE</span><span id="stat-link-val">0%</span></div>
+          <div class="stat-bar-outer"><div class="stat-bar-inner" id="stat-link-bar"></div></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat-label"><span>ACCOUNT GUARD</span><span id="stat-key-val">0%</span></div>
+          <div class="stat-bar-outer"><div class="stat-bar-inner" id="stat-key-bar"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="btn-row" style="justify-content:center; margin-top:18px;">
+      <button class="btn purple pixel-box" id="btn-go-card">VIEW PLAYER CARD ▶</button>
+      <button class="btn secondary pixel-box" data-goto="screen-home">◀ HOME</button>
+    </div>
+  </section>
+
+  <!-- CARD -->
+  <section class="screen bg-grid" id="screen-card">
+    <h2 class="section-head" style="text-align:center;">YOUR CYBER SENSE ID</h2>
+    <div class="id-card pixel-box">
+      <div class="id-logo">CYBER SENSE</div>
+      <div class="pixel-avatar" id="card-avatar" style="transform:scale(1.15);">
+        <div class="pa-body"></div><div class="pa-collar"></div><div class="pa-head"></div>
+        <div class="pa-eye l"></div><div class="pa-eye r"></div>
+      </div>
+      <div class="id-name" id="card-name">PLAYER</div>
+      <div class="id-role">CYBER EXPLORER</div>
+      <div class="id-score" id="card-score">SAFETY SCORE 50</div>
+      <div class="id-coins" id="card-coins">🪙 COINS 0</div>
+      <div class="id-badges">
+        <div class="mini-badge pixel-box-sm" style="background:linear-gradient(135deg,var(--red),var(--orange));" title="THE TRAP"></div>
+        <div class="mini-badge pixel-box-sm" style="background:linear-gradient(135deg,var(--cyan),var(--purple));" title="THE LINK"></div>
+        <div class="mini-badge pixel-box-sm" style="background:linear-gradient(135deg,var(--yellow),var(--orange));" title="THE KEY"></div>
+      </div>
+      <div class="id-tag">THINK. CHECK. THEN CLICK.</div>
+    </div>
+    <div class="btn-row" style="justify-content:center; margin-top:20px;">
+      <button class="btn secondary pixel-box" data-goto="screen-home">◀ HOME</button>
+      <button class="btn danger pixel-box" id="btn-play-again">PLAY AGAIN</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= SCENARIO DATABASE ================= */
+const SCENARIOS = {
+trap: [
+ {id:"trap01", type:"fake", title:"Account Security Alert", metaLabel:"FROM", source:"security@cybersense-support-alerts.com", body:"We detected unusual activity. Your account will be suspended in 10 minutes.", ctaLabel:"VERIFY NOW", clues:[{label:"SENDER",text:"Domain is not the official company domain."},{label:"LINK",text:"The verify link points to an unrelated address."},{label:"TONE",text:"Urgent countdown pressures you to act fast."}], insight:"The domain and countdown timer are classic phishing pressure tactics.", coinReward:15, coinPenalty:20, safetyReward:5, safetyPenalty:15, nullMessage:"JUST CLICK IT."},
+ {id:"trap02", type:"real", title:"Your Order Has Shipped", metaLabel:"FROM", source:"orders@pixelmart.com", body:"Your recent order #48213 has shipped and will arrive in 3-5 days.", ctaLabel:"TRACK PACKAGE", clues:[{label:"SENDER",text:"Matches PixelMart's known order domain."},{label:"CONTENT",text:"References a real order number, no urgent threats."}], insight:"This matches a normal order confirmation — nothing pressures you to act immediately.", coinReward:15, coinPenalty:0, safetyReward:5, safetyPenalty:0, nullMessage:""},
+ {id:"trap03", type:"fake", title:"You Won a Reward!", metaLabel:"FROM", source:"rewards@luckypixel-prizes.com", body:"Congratulations! You've been selected to receive 500 bonus coins. Claim before it expires.", ctaLabel:"CLAIM REWARD", clues:[{label:"SENDER",text:"Unfamiliar prize domain you never signed up for."},{label:"TONE",text:"An unexpected prize for a contest you never entered."}], insight:"Unsolicited prizes for contests you never entered are a common scam pattern.", coinReward:15, coinPenalty:25, safetyReward:5, safetyPenalty:15, nullMessage:"FREE COINS. WHAT COULD GO WRONG?"},
+ {id:"trap04", type:"real", title:"Meetup Confirmed: Retro Gaming Night", metaLabel:"FROM", source:"events@pixelworldmeetup.com", body:"Your RSVP for Friday's Retro Gaming Night is confirmed. See you there!", ctaLabel:"ADD TO CALENDAR", clues:[{label:"SENDER",text:"Matches the event page you registered on."},{label:"CONTENT",text:"References an event you actually RSVP'd to."}], insight:"This lines up with an event you signed up for — nothing suspicious.", coinReward:10, coinPenalty:0, safetyReward:5, safetyPenalty:0, nullMessage:""},
+ {id:"trap05", type:"fake", title:"Password Reset Requested", metaLabel:"FROM", source:"no-reply@accounts-secure-check.net", body:"We received a request to reset your password. If this wasn't you, verify immediately.", ctaLabel:"RESET PASSWORD", clues:[{label:"SENDER",text:"Domain doesn't match your real account provider."},{label:"LINK",text:"Reset link leads to a lookalike domain."}], insight:"A mismatched domain on a password reset is a strong phishing signal.", coinReward:15, coinPenalty:20, safetyReward:5, safetyPenalty:15, nullMessage:"THANKS FOR THE PASSWORD."},
+ {id:"trap06", type:"fake", title:"Unusual Sign-in Detected", metaLabel:"FROM", source:"alert@security-cybersense.info", body:"Someone tried to log in from a new device. Confirm it was you or your account will be locked.", ctaLabel:"CONFIRM IDENTITY", clues:[{label:"SENDER",text:"Domain uses an unofficial .info alert address."},{label:"TONE",text:"Threatens account lockout to rush your decision."}], insight:"Legit alerts don't threaten lockout with a countdown from a random domain.", coinReward:15, coinPenalty:20, safetyReward:5, safetyPenalty:15, nullMessage:"TICK TOCK."},
+ {id:"trap07", type:"real", title:"Monthly Newsletter", metaLabel:"FROM", source:"news@pixelgamesweekly.com", body:"This week: five retro games worth revisiting and a developer interview.", ctaLabel:"READ MORE", clues:[{label:"SENDER",text:"Matches a newsletter you're subscribed to."},{label:"CONTENT",text:"No requests for personal information."}], insight:"A routine newsletter with no requests for information or urgent action.", coinReward:10, coinPenalty:0, safetyReward:5, safetyPenalty:0, nullMessage:""},
+ {id:"trap08", type:"real", title:"Delivery Notification", metaLabel:"FROM", source:"tracking@fastship-delivery.com", body:"Your package is out for delivery today between 1-5 PM.", ctaLabel:"VIEW TRACKING", clues:[{label:"SENDER",text:"Matches the courier you actually used."},{label:"CONTENT",text:"Matches a purchase you actually made."}], insight:"This matches a real purchase and delivery window — no red flags.", coinReward:10, coinPenalty:0, safetyReward:5, safetyPenalty:0, nullMessage:""}
+],
+link: [
+ {id:"link01", type:"fake", title:"Account Security Check", metaLabel:"URL", source:"secure-account.com/verify", body:"Unusual activity detected on your account. Continue to secure it now.", ctaLabel:"CONTINUE", clues:[{label:"URL",text:"Domain doesn't match the real company's website."},{label:"PAGE",text:"Asks for your password immediately with no context."}], insight:"The domain doesn't match any official service you use.", coinReward:15, coinPenalty:20, safetyReward:5, safetyPenalty:15, nullMessage:"IT LOOKS REAL, DOESN'T IT?"},
+ {id:"link02", type:"real", title:"PixelMart Official Store", metaLabel:"URL", source:"pixelmart.com/summer-sale", body:"Summer sale: up to 40% off retro peripherals, today only.", ctaLabel:"SHOP NOW", clues:[{label:"URL",text:"Matches PixelMart's real, known domain."},{label:"PAGE",text:"No login or personal info requested to browse."}], insight:"This matches the store's real domain and doesn't ask for sensitive info.", coinReward:15, coinPenalty:0, safetyReward:5, safetyPenalty:0, nullMessage:""},
+ {id:"link03", type:"fake", title:"You've Won a Free Console!", metaLabel:"URL", source:"free-prize-pixelworld.net", body:"You are today's lucky visitor! Claim your free retro console now.", ctaLabel:"CLAIM NOW", clues:[{label:"URL",text:"Random prize domain unrelated to any real store."},{label:"PAGE",text:"Asks for card details to 'cover shipping'."}], insight:"Free prizes that ask for payment details are never free.", coinReward:15, coinPenalty:30, safetyReward:5, safetyPenalty:20, nullMessage:"JUST A SMALL SHIPPING FEE."},
+ {id:"link04", type:"real", title:"City Library Event Page", metaLabel:"URL", source:"citylibrary.gov/events", body:"Author talk this Saturday at 3 PM, free registration.", ctaLabel:"REGISTER", clues:[{label:"URL",text:"Official .gov domain for the city library."},{label:"PAGE",text:"Simple registration, no payment or sensitive data needed."}], insight:"A .gov domain with a simple free registration is a normal, safe page.", coinReward:10, coinPenalty:0, safetyReward:5, safetyPenalty:0, nullMessage:""},
+ {id:"link05", type:"fake", title:"Account Verification Required", metaLabel:"URL", source:"verify-secure-login.com", body:"Your session has expired. Log in again to continue using your account.", ctaLabel:"LOG IN", clues:[{label:"URL",text:"Domain is unrelated to the real service."},{label:"PAGE",text:"Login form submits to a different, hidden domain."}], insight:"A login form pointing to a hidden third-party domain is a major red flag.", coinReward:15, coinPenalty:20, safetyReward:5, safetyPenalty:15, nullMessage:"ENTER YOUR PASSWORD, PLEASE."},
+ {id:"link06", type:"fake", title:"Track Your Package", metaLabel:"URL", source:"fastship-tracking-update.com", body:"Delivery failed. Pay a small redelivery fee to reschedule.", ctaLabel:"PAY FEE", clues:[{label:"URL",text:"Not the real courier's domain."},{label:"PAGE",text:"Real couriers don't charge card fees to redeliver."}], insight:"Real couriers never charge a card fee through a random link to redeliver.", coinReward:15, coinPenalty:30, safetyReward:5, safetyPenalty:20, nullMessage:"IT'S JUST A FEW COINS."},
+ {id:"link07", type:"real", title:"Community Forum", metaLabel:"URL", source:"pixelworldforum.com/guides", body:"A community guide on staying safe from common online scams.", ctaLabel:"READ GUIDE", clues:[{label:"URL",text:"Matches the known community forum domain."},{label:"PAGE",text:"No login or payment required to read."}], insight:"A public guide page with no login or payment request is safe to visit.", coinReward:10, coinPenalty:0, safetyReward:5, safetyPenalty:0, nullMessage:""},
+ {id:"link08", type:"fake", title:"Investment Opportunity", metaLabel:"URL", source:"pixelcoin-doubler.biz", body:"Double your coins in 24 hours. Limited spots available, invest now.", ctaLabel:"INVEST NOW", clues:[{label:"URL",text:"Unregulated domain promising guaranteed returns."},{label:"PAGE",text:"Guaranteed doubling of money is a classic scam pattern."}], insight:"Guaranteed high returns in 24 hours is a textbook investment scam.", coinReward:15, coinPenalty:30, safetyReward:5, safetyPenalty:20, nullMessage:"DOUBLE OR NOTHING."}
+],
+key: [
+ {id:"key01", type:"fake", title:"Support Needs Your Code", metaLabel:"FROM", source:'"CyberSense Support" (unverified)', body:"Please send me your OTP so I can unlock your account for you.", ctaLabel:"SEND CODE", clues:[{label:"PROFILE",text:"This support account was created today, no verification badge."},{label:"POLICY",text:"Real support never asks you to send your OTP."}], insight:"No legitimate support agent will ever ask you to send them your OTP.", coinReward:15, coinPenalty:40, safetyReward:10, safetyPenalty:25, nullMessage:"THANKS FOR THE CODE."},
+ {id:"key02", type:"real", title:"New Device Login Confirmation", metaLabel:"FROM", source:"CyberSense Security (official)", body:"We noticed a login from your own new laptop. Confirm it was you.", ctaLabel:"VERIFY REQUEST", clues:[{label:"PROFILE",text:"Sent from the verified official security account."},{label:"CONTEXT",text:"Matches a device you actually just signed into."}], insight:"This matches a login you actually just made from a new device.", coinReward:10, coinPenalty:0, safetyReward:10, safetyPenalty:0, nullMessage:""},
+ {id:"key03", type:"fake", title:"Reward Requires Verification", metaLabel:"FROM", source:'"Prize Team" (unverified)', body:"To claim your reward, verify your identity by sending your one-time code.", ctaLabel:"SEND CODE", clues:[{label:"PROFILE",text:"Unverified account with no prior history."},{label:"POLICY",text:"No real reward legitimately requires your OTP to 'verify'."}], insight:"OTPs protect your account — no reward ever legitimately requires one.", coinReward:15, coinPenalty:40, safetyReward:10, safetyPenalty:25, nullMessage:"CONGRATULATIONS, IT'S MINE NOW."},
+ {id:"key04", type:"real", title:"Two-Factor Confirmation", metaLabel:"FROM", source:"CyberSense Security (official)", body:"Confirm this sign-in attempt to finish logging into your account.", ctaLabel:"VERIFY REQUEST", clues:[{label:"PROFILE",text:"From the verified official security channel."},{label:"CONTEXT",text:"You are currently trying to log in yourself."}], insight:"This is a normal two-factor prompt for a login you initiated yourself.", coinReward:10, coinPenalty:0, safetyReward:10, safetyPenalty:0, nullMessage:""},
+ {id:"key05", type:"fake", title:"Account Recovery Assistant", metaLabel:"FROM", source:'"Recovery Bot" (unverified)', body:"I can help recover your locked account. Just confirm your code first.", ctaLabel:"SEND CODE", clues:[{label:"PROFILE",text:"No official badge, contacted you first unprompted."},{label:"POLICY",text:"Recovery never requires sending your active OTP to a stranger."}], insight:"An unsolicited 'recovery helper' asking for your code is always a scam.", coinReward:15, coinPenalty:40, safetyReward:10, safetyPenalty:25, nullMessage:"ALMOST HAD ME WORRIED."},
+ {id:"key06", type:"fake", title:"Suspicious Login Alert", metaLabel:"FROM", source:"security@account-alerts-fix.net", body:"Your account was accessed from another country. Verify with your code now.", ctaLabel:"SEND CODE", clues:[{label:"PROFILE",text:"Domain doesn't match your real account provider."},{label:"POLICY",text:"A real alert would never ask you to send your OTP in chat."}], insight:"A real security alert directs you to log in yourself, never to send a code.", coinReward:15, coinPenalty:40, safetyReward:10, safetyPenalty:25, nullMessage:"WRONG COUNTRY, RIGHT COINS."},
+ {id:"key07", type:"real", title:"Password Changed Successfully", metaLabel:"FROM", source:"CyberSense Security (official)", body:"Your password was just changed. If this was you, no action is needed.", ctaLabel:"VERIFY REQUEST", clues:[{label:"PROFILE",text:"From the verified official account."},{label:"CONTEXT",text:"Matches a password change you actually made."}], insight:"This confirms a change you made yourself — just a routine notice.", coinReward:10, coinPenalty:0, safetyReward:10, safetyPenalty:0, nullMessage:""},
+ {id:"key08", type:"fake", title:"Urgent: Verify or Lose Access", metaLabel:"FROM", source:'"Account Team" (unverified)', body:"Reply with your one-time code within 5 minutes or lose your account permanently.", ctaLabel:"SEND CODE", clues:[{label:"PROFILE",text:"Unverified account, created moments ago."},{label:"TONE",text:"Extreme urgency and permanent loss threats pressure quick action."}], insight:"Extreme urgency plus a request for your OTP is a textbook takeover attempt.", coinReward:15, coinPenalty:40, safetyReward:10, safetyPenalty:25, nullMessage:"FIVE MINUTES WAS PLENTY."}
+]
+};
+const ROUND_NAMES = {trap:"THE TRAP", link:"THE LINK", key:"THE KEY"};
+const ROUND_STAT = {trap:"phishingRadar", link:"linkSense", key:"accountGuard"};
+
+/* ================= STATE ================= */
+const STORAGE_KEY = "cybersense_pixelworld_v1";
+function defaultState(){
+  return {
+    playerName:"", selectedGender:null,
+    safetyScore:50, coins:0, escapeRequirement:300,
+    currentRound:null, roundQueue:[], roundIndex:0,
+    roundStartCoins:0, roundStartSafety:0,
+    trapCompleted:false, linkCompleted:false, keyCompleted:false,
+    scenarioHistory:[], actionHistory:[],
+    phishingRadar:0, linkSense:0, accountGuard:0,
+    gameOver:false, gameWon:false,
+    screen:"screen-start"
+  };
+}
+let state = loadState();
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return defaultState();
+    return Object.assign(defaultState(), JSON.parse(raw));
+  }catch(e){ return defaultState(); }
+}
+function saveState(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
+function logAction(a){ state.actionHistory.push({a:a,t:Date.now()}); }
+function escapeHtml(str){ return String(str).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ================= SCREEN NAV ================= */
+const screens = document.querySelectorAll(".screen");
+function showScreen(id){
+  screens.forEach(s=>s.classList.toggle("active", s.id===id));
+  state.screen = id; saveState(); window.scrollTo(0,0);
+}
+document.querySelectorAll("[data-goto]").forEach(btn=> btn.addEventListener("click", ()=> showScreen(btn.dataset.goto)));
+
+/* ================= TOAST / POPUP ================= */
+function toast(text, type){
+  const wrap = document.getElementById("toast-wrap");
+  const el = document.createElement("div");
+  el.className = "toast " + (type||"pos");
+  el.textContent = text;
+  wrap.appendChild(el);
+  setTimeout(()=> el.remove(), 1900);
+}
+const popupOverlay = document.getElementById("popup-overlay");
+function openPopup(title, html){
+  document.getElementById("popup-title").textContent = title;
+  document.getElementById("popup-body").innerHTML = html;
+  popupOverlay.classList.add("active");
+}
+function closePopup(){ popupOverlay.classList.remove("active"); }
+document.getElementById("popup-close").addEventListener("click", closePopup);
+popupOverlay.addEventListener("click", e=>{ if(e.target===popupOverlay) closePopup(); });
+
+/* ================= HUD / SCORE / COINS ================= */
+function scoreState(score){
+  if(score>=76) return {label:"SAFE", color:"var(--cyan)"};
+  if(score>=51) return {label:"CAUTION", color:"var(--yellow)"};
+  if(score>=26) return {label:"WARNING", color:"var(--orange)"};
+  if(score>=1) return {label:"DANGER", color:"var(--red)"};
+  return {label:"GAME OVER", color:"var(--red)"};
+}
+function buildHeader(){
+  const wrap = document.createElement("div");
+  wrap.id = "game-header";
+  const st = scoreState(state.safetyScore);
+  wrap.innerHTML = `
+    <div class="who">${escapeHtml(state.playerName || "PLAYER")}</div>
+    <div class="score-wrap">
+      <div class="score-label"><span>SAFETY SCORE</span><span>${state.safetyScore}/100</span></div>
+      <div class="score-bar-outer pixel-box-sm"><div class="score-bar-inner" style="width:${Math.max(0,Math.min(100,state.safetyScore))}%; background:${st.color};"></div></div>
+    </div>
+    <div class="coin-wrap" id="coin-wrap-el"><span class="coin-icon">🪙</span><span id="coin-value">${state.coins}</span></div>
+    <div class="score-state pixel-box-sm" style="background:${st.color};color:var(--navy);">${st.label}</div>
+  `;
+  return wrap;
+}
+function renderHeaders(){
+  ["home-header-slot","rs-header-slot","scenario-header-slot"].forEach(slotId=>{
+    const slot = document.getElementById(slotId);
+    if(!slot) return;
+    slot.innerHTML = "";
+    slot.appendChild(buildHeader());
+  });
+}
+function adjustSafety(delta){
+  state.safetyScore = Math.max(0, Math.min(100, state.safetyScore + delta));
+}
+function adjustCoins(delta){
+  state.coins = Math.max(0, state.coins + delta);
+}
+function applyDeltas(coinDelta, safetyDelta, msg){
+  adjustCoins(coinDelta);
+  adjustSafety(safetyDelta);
+  saveState();
+  renderHeaders();
+  const wrap = document.getElementById("coin-wrap-el");
+  if(wrap){ wrap.classList.remove("bump"); void wrap.offsetWidth; wrap.classList.add("bump"); }
+  if(safetyDelta!==0) toast((safetyDelta>0?"+":"")+safetyDelta+" SAFETY"+(msg?" — "+msg:""), safetyDelta>0?"pos":"neg");
+  if(coinDelta!==0) toast("🪙 "+(coinDelta>0?"+":"")+coinDelta+" COINS", coinDelta>0?"coin":"neg");
+  if(state.safetyScore<=0){ triggerGameOver(); return true; }
+  return false;
+}
+
+/* ================= START / CINEMATIC ================= */
+document.getElementById("btn-start").addEventListener("click", ()=>{
+  cineIndex = 0;
+  renderCine();
+  showScreen("screen-cinematic");
+});
+document.getElementById("logo-text").addEventListener("mouseenter", e=>{
+  e.target.classList.remove("glitching"); void e.target.offsetWidth; e.target.classList.add("glitching");
+});
+setInterval(()=>{
+  const logo = document.getElementById("logo-text");
+  if(logo && document.getElementById("screen-start").classList.contains("active")){
+    logo.classList.remove("glitching"); void logo.offsetWidth; logo.classList.add("glitching");
+  }
+}, 4500);
+
+const CINE_STEPS = [
+  {text:"YOU WERE NOT SUPPOSED TO BE HERE."},
+  {text:"WELCOME TO THE PIXEL WORLD."},
+  {text:"YOU ARE TRAPPED."},
+  {text:"THERE IS ONLY ONE WAY OUT."},
+  {gate:true, text:"COLLECT 300 COINS TO ESCAPE."},
+  {villain:true, text:"YOU WON'T GET OUT THAT EASILY."}
+];
+let cineIndex = 0;
+function renderCine(){
+  const step = CINE_STEPS[cineIndex];
+  const visual = document.getElementById("cine-visual");
+  const textEl = document.getElementById("cine-text");
+  visual.innerHTML = "";
+  textEl.classList.toggle("null-line", !!step.villain);
+  if(step.gate){
+    const g = document.createElement("div"); g.className="gate-graphic"; visual.appendChild(g);
+    textEl.textContent = step.text;
+  } else if(step.villain){
+    const n = document.createElement("div"); n.className="null-silhouette"; visual.appendChild(n);
+    textEl.textContent = "NULL: \u201C" + step.text + "\u201D";
+  } else {
+    textEl.textContent = step.text;
+  }
+  document.getElementById("cine-progress").textContent = (cineIndex+1)+" / "+CINE_STEPS.length;
+  document.getElementById("btn-cine-next").textContent = (cineIndex===CINE_STEPS.length-1) ? "BEGIN ▶" : "NEXT ▶";
+}
+document.getElementById("btn-cine-next").addEventListener("click", ()=>{
+  if(cineIndex < CINE_STEPS.length-1){ cineIndex++; renderCine(); }
+  else showScreen("screen-character");
+});
+
+/* ================= CHARACTER SELECT ================= */
+const charCards = document.querySelectorAll(".char-card");
+charCards.forEach(card=>{
+  function select(){
+    charCards.forEach(c=>{ c.classList.remove("selected"); c.setAttribute("aria-pressed","false"); });
+    card.classList.add("selected"); card.setAttribute("aria-pressed","true");
+    state.selectedGender = card.dataset.gender;
+    document.getElementById("btn-confirm-char").disabled = false;
+  }
+  card.addEventListener("click", select);
+  card.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); select(); } });
+});
+document.getElementById("btn-confirm-char").addEventListener("click", ()=>{
+  saveState(); showScreen("screen-name"); document.getElementById("input-name").focus();
+});
+
+function applyAvatarClass(){
+  document.querySelectorAll(".pixel-avatar:not(.char-card *)").forEach(av=>{
+    av.classList.remove("avatar-male","avatar-female");
+    av.classList.add(state.selectedGender==="female" ? "avatar-female" : "avatar-male");
+    let hair = av.querySelector(".pa-hair-m, .pa-hair-f");
+    if(hair) hair.remove();
+    const newHair = document.createElement("div");
+    newHair.className = state.selectedGender==="female" ? "pa-hair-f" : "pa-hair-m";
+    av.appendChild(newHair);
+  });
+}
+
+/* ================= NAME -> HOME ================= */
+function confirmName(){
+  const val = document.getElementById("input-name").value.trim();
+  state.playerName = val || "AGENT";
+  saveState();
+  applyAvatarClass();
+  document.getElementById("home-name").textContent = state.playerName.toUpperCase();
+  renderHeaders();
+  showScreen("screen-home");
+}
+document.getElementById("btn-confirm-name").addEventListener("click", confirmName);
+document.getElementById("input-name").addEventListener("keydown", e=>{ if(e.key==="Enter") confirmName(); });
+
+/* ================= HOME ================= */
+document.getElementById("btn-play").addEventListener("click", ()=>{ renderRoundSelect(); showScreen("screen-round-select"); });
+document.getElementById("btn-home-profile").addEventListener("click", ()=>{ renderProfile(); showScreen("screen-profile"); });
+document.getElementById("btn-home-gate").addEventListener("click", ()=>{ renderExitGate(); showScreen("screen-exitgate"); });
+
+/* ================= ROUND SELECT ================= */
+function renderRoundSelect(justUnlocked){
+  renderHeaders();
+  const map = {trap:state.trapCompleted, link:state.linkCompleted, key:state.keyCompleted};
+  document.querySelectorAll(".round-card").forEach(card=>{
+    const round = card.dataset.round;
+    const done = map[round];
+    card.classList.toggle("done", !!done);
+    const icon = card.querySelector(".round-icon");
+    if(round === justUnlocked){
+      icon.classList.remove("just-unlocked"); void icon.offsetWidth; icon.classList.add("just-unlocked");
+    }
+    const sub = card.querySelector(".round-sub");
+    sub.textContent = done ? "BADGE UNLOCKED — REPLAY" : sub.dataset.orig;
+  });
+  const allDone = state.trapCompleted && state.linkCompleted && state.keyCompleted;
+  const gateCard = document.getElementById("gate-card");
+  gateCard.classList.toggle("locked", !allDone);
+  document.getElementById("gate-card-sub").textContent = allDone ? "🪙 "+state.coins+" / "+state.escapeRequirement : "Complete all missions";
+}
+document.querySelectorAll(".round-card").forEach(card=>{
+  function open(){ startRound(card.dataset.round); }
+  card.addEventListener("click", open);
+  card.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); } });
+});
+document.getElementById("gate-card").addEventListener("click", ()=>{
+  if(!(state.trapCompleted && state.linkCompleted && state.keyCompleted)) return;
+  renderExitGate(); showScreen("screen-exitgate");
+});
+
+/* ================= SCENARIO ENGINE ================= */
+let inspectedSet = new Set();
+function startRound(roundKey){
+  state.currentRound = roundKey;
+  const pool = SCENARIOS[roundKey];
+  const picked = shuffle(pool).slice(0,4);
+  state.roundQueue = picked.map(s=>s.id);
+  state.roundIndex = 0;
+  state.roundStartCoins = state.coins;
+  state.roundStartSafety = state.safetyScore;
+  saveState();
+  renderHeaders();
+  showNotifyStep();
+  showScreen("screen-scenario");
+}
+function currentScenarioObj(){
+  return SCENARIOS[state.currentRound].find(s=>s.id===state.roundQueue[state.roundIndex]);
+}
+const NOTIFY_TEXT = {trap:"[ NEW EMAIL RECEIVED ]", link:"[ NEW LINK RECEIVED ]", key:"[ NEW MESSAGE RECEIVED ]"};
+function showNotifyStep(){
+  inspectedSet = new Set();
+  document.getElementById("scenario-progress").textContent = "SCENARIO " + (state.roundIndex+1) + " OF " + state.roundQueue.length + " — " + ROUND_NAMES[state.currentRound];
+  const frame = document.getElementById("scenario-frame");
+  frame.innerHTML = `
+    <div class="notify-box">
+      <div class="notify-badge pixel-box-sm" id="notify-open-btn">${NOTIFY_TEXT[state.currentRound]}</div>
+      <p class="section-sub" style="max-width:360px;">Something new has arrived. Open it and investigate before you decide.</p>
+    </div>`;
+  document.getElementById("notify-open-btn").addEventListener("click", showContentStep);
+}
+function showContentStep(){
+  const sc = currentScenarioObj();
+  const frame = document.getElementById("scenario-frame");
+  const clueButtons = sc.clues.map((c,i)=>`<button class="clue-btn pixel-box-sm" data-clue="${i}">[ ${escapeHtml(c.label)} ]</button>`).join("");
+  frame.innerHTML = `
+    <div class="scenario-card">
+      <div class="scenario-meta">${escapeHtml(sc.metaLabel)}: ${escapeHtml(sc.source)}</div>
+      <div class="scenario-title">${escapeHtml(sc.title)}</div>
+      <div class="scenario-body">${escapeHtml(sc.body)}</div>
+      <div class="clue-row">${clueButtons}</div>
+      <div class="decision-row">
+        <button class="decision-btn cta pixel-box-sm" data-action="cta">${escapeHtml(sc.ctaLabel)}</button>
+        <button class="decision-btn other pixel-box-sm" data-action="verify_official">VERIFY OFFICIALLY</button>
+        <button class="decision-btn other pixel-box-sm" data-action="report">REPORT</button>
+        <button class="decision-btn other pixel-box-sm" data-action="ignore">IGNORE</button>
+      </div>
+    </div>`;
+  frame.querySelectorAll(".clue-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const idx = Number(btn.dataset.clue);
+      const clue = sc.clues[idx];
+      if(!inspectedSet.has(idx)){
+        inspectedSet.add(idx);
+        btn.classList.add("checked");
+        const over = applyDeltas(0, 5, clue.label + " CHECKED");
+        logAction(state.currentRound+"_clue_"+clue.label);
+        if(over) return;
+      }
+      openPopup(clue.label + " CHECK", "<p>"+escapeHtml(clue.text)+"</p>");
+    });
+  });
+  frame.querySelectorAll(".decision-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      frame.querySelectorAll(".decision-btn").forEach(b=> b.disabled = true);
+      resolveDecision(sc, btn.dataset.action);
+    });
+  });
+}
+function resolveTier(sc, action){
+  if(sc.type==="fake"){
+    if(action==="report") return "best";
+    if(action==="verify_official") return "good";
+    if(action==="ignore") return "neutral";
+    if(action==="cta") return "bad";
+  } else {
+    if(action==="cta" || action==="verify_official") return "best";
+    if(action==="report" || action==="ignore") return "neutral";
+  }
+  return "neutral";
+}
+function resolveDecision(sc, action){
+  const tier = resolveTier(sc, action);
+  let coinDelta=0, safetyDelta=0;
+  if(tier==="best"){ coinDelta = sc.coinReward; safetyDelta = sc.safetyReward; }
+  else if(tier==="good"){ coinDelta = Math.round(sc.coinReward*0.5); safetyDelta = Math.round(sc.safetyReward*0.6); }
+  else if(tier==="neutral"){ coinDelta = 0; safetyDelta = -2; }
+  else { coinDelta = -sc.coinPenalty; safetyDelta = -sc.safetyPenalty; }
+
+  logAction(state.currentRound+"_decide_"+action);
+  state.scenarioHistory.push({round:state.currentRound, id:sc.id, type:sc.type, action:action, tier:tier});
+  saveState();
+
+  const gameOverTriggered = applyDeltas(coinDelta, safetyDelta, null);
+  if(gameOverTriggered) return;
+  renderConsequence(sc, tier, coinDelta, safetyDelta);
+}
+function tierLabel(sc, tier){
+  const isFake = sc.type==="fake";
+  if(tier==="best") return {title: isFake?"THREAT DETECTED":"GOOD CALL", cls:"good", lead: isFake?"You correctly identified this as a trap.":"This was legitimate, and you handled it correctly."};
+  if(tier==="good") return {title:"THREAT AVOIDED", cls:"good", lead:"You played it safe and avoided the risk."};
+  if(tier==="neutral") return {title: isFake?"CAUTIOUS, BUT INCOMPLETE":"NO HARM DONE", cls:"neutral", lead: isFake?"You avoided the trap but didn't fully confirm it.":"This was actually safe — you missed a reward by not engaging."};
+  return {title:"TRAP ACTIVATED", cls:"bad", lead:"NULL got what it wanted."};
+}
+function renderConsequence(sc, tier, coinDelta, safetyDelta){
+  const info = tierLabel(sc, tier);
+  const frame = document.getElementById("scenario-frame");
+  const nullHtml = (tier==="bad" && sc.nullMessage) ? `
+    <div class="null-box pixel-box-sm">
+      <div class="mini-null"></div>
+      <div class="quote">NULL: "${escapeHtml(sc.nullMessage)}"</div>
+    </div>` : "";
+  frame.innerHTML = `
+    <div class="consequence ${info.cls}">
+      <span class="type-reveal ${sc.type} pixel-box-sm">THIS WAS: ${sc.type.toUpperCase()}</span>
+      <h3>${info.title}</h3>
+      <p>${info.lead} ${escapeHtml(sc.insight)}</p>
+      <div class="delta-row">
+        <span class="${safetyDelta>=0?'delta-pos':'delta-neg'}">${safetyDelta>=0?'+':''}${safetyDelta} SAFETY</span>
+        <span class="${coinDelta>=0?'delta-pos':'delta-neg'}">🪙 ${coinDelta>=0?'+':''}${coinDelta}</span>
+      </div>
+      ${nullHtml}
+      <button class="btn pixel-box" id="scenario-continue-btn">CONTINUE ▶</button>
+    </div>`;
+  document.getElementById("scenario-continue-btn").addEventListener("click", nextScenarioStep);
+}
+function nextScenarioStep(){
+  state.roundIndex++;
+  if(state.roundIndex < state.roundQueue.length){ saveState(); showNotifyStep(); }
+  else finishRound();
+}
+function finishRound(){
+  const round = state.currentRound;
+  const coinsDelta = state.coins - state.roundStartCoins;
+  const safetyDelta = state.safetyScore - state.roundStartSafety;
+  const wasCompleted = round==="trap"?state.trapCompleted: round==="link"?state.linkCompleted: state.keyCompleted;
+  if(round==="trap") state.trapCompleted = true;
+  if(round==="link") state.linkCompleted = true;
+  if(round==="key") state.keyCompleted = true;
+
+  const statKey = ROUND_STAT[round];
+  const attempts = state.scenarioHistory.filter(h=>h.round===round);
+  const goodCount = attempts.filter(h=>h.tier==="best"||h.tier==="good").length;
+  state[statKey] = attempts.length ? Math.round((goodCount/attempts.length)*100) : 0;
+  saveState();
+
+  const frame = document.getElementById("scenario-frame");
+  frame.innerHTML = `
+    <div class="consequence good">
+      <h3>MISSION COMPLETE</h3>
+      <p style="font-family:'Press Start 2P',monospace; font-size:13px; color:var(--cyan);">${ROUND_NAMES[round]}</p>
+      <div class="delta-row">
+        <span class="${safetyDelta>=0?'delta-pos':'delta-neg'}">${safetyDelta>=0?'+':''}${safetyDelta} SAFETY</span>
+        <span class="${coinsDelta>=0?'delta-pos':'delta-neg'}">🪙 ${coinsDelta>=0?'+':''}${coinsDelta}</span>
+      </div>
+      <p>${wasCompleted ? "You replayed this mission and gathered more coins." : "BADGE UNLOCKED."}</p>
+      <button class="btn pixel-box" id="round-back-btn">◀ ROUND SELECT</button>
+    </div>`;
+  document.getElementById("round-back-btn").addEventListener("click", ()=>{
+    renderRoundSelect(wasCompleted ? null : round);
+    showScreen("screen-round-select");
+  });
+}
+
+/* ================= GAME OVER ================= */
+function triggerGameOver(){
+  state.gameOver = true;
+  saveState();
+  document.getElementById("go-stats").innerHTML = "SAFETY SCORE: 0 / 100<br>COINS: " + state.coins;
+  showScreen("screen-gameover");
+}
+document.getElementById("btn-try-again").addEventListener("click", ()=>{
+  const keep = {playerName:state.playerName, selectedGender:state.selectedGender};
+  state = Object.assign(defaultState(), keep);
+  saveState();
+  renderHeaders();
+  document.getElementById("home-name").textContent = (state.playerName||"PLAYER").toUpperCase();
+  showScreen("screen-home");
+});
+document.getElementById("btn-return-menu").addEventListener("click", ()=>{
+  localStorage.removeItem(STORAGE_KEY);
+  state = defaultState();
+  document.getElementById("input-name").value = "";
+  charCards.forEach(c=>{ c.classList.remove("selected"); c.setAttribute("aria-pressed","false"); });
+  document.getElementById("btn-confirm-char").disabled = true;
+  showScreen("screen-start");
+});
+
+/* ================= EXIT GATE ================= */
+function renderExitGate(){
+  const enough = state.coins >= state.escapeRequirement;
+  const allDone = state.trapCompleted && state.linkCompleted && state.keyCompleted;
+  document.getElementById("gate-req").textContent = "🪙 REQUIRED: " + state.escapeRequirement;
+  document.getElementById("gate-current").textContent = "CURRENT: " + state.coins;
+  document.getElementById("gate-big").classList.toggle("open", enough && allDone);
+  const resultEl = document.getElementById("gate-result");
+  const actionsEl = document.getElementById("gate-actions");
+  actionsEl.innerHTML = "";
+  if(!allDone){
+    resultEl.textContent = "Complete THE TRAP, THE LINK and THE KEY before approaching the gate.";
+    const btn = document.createElement("button");
+    btn.className = "btn secondary pixel-box"; btn.textContent = "◀ ROUND SELECT";
+    btn.addEventListener("click", ()=>{ renderRoundSelect(); showScreen("screen-round-select"); });
+    actionsEl.appendChild(btn);
+  } else if(enough){
+    resultEl.innerHTML = "ENOUGH COINS. THE GATE IS UNLOCKED.";
+    const btn = document.createElement("button");
+    btn.className = "btn purple pixel-box"; btn.textContent = "OPEN GATE ▶";
+    btn.addEventListener("click", playEscapeSequence);
+    actionsEl.appendChild(btn);
+  } else {
+    resultEl.innerHTML = "NOT ENOUGH COINS.<br>REQUIRED: " + state.escapeRequirement + " — CURRENT: " + state.coins;
+    const btn = document.createElement("button");
+    btn.className = "btn warn pixel-box"; btn.textContent = "KEEP EXPLORING ▶";
+    btn.addEventListener("click", ()=>{ renderRoundSelect(); showScreen("screen-round-select"); });
+    actionsEl.appendChild(btn);
+  }
+}
+function playEscapeSequence(){
+  state.gameWon = true; saveState();
+  openPopup("NULL", "<p>\"YOU ACTUALLY MADE IT?\"</p>");
+  setTimeout(()=>{
+    closePopup();
+    renderProfile();
+    document.getElementById("screen-profile").querySelector(".section-head").textContent = "WELCOME BACK — CYBER PROFILE";
+    showScreen("screen-profile");
+  }, 1400);
+}
+
+/* ================= PROFILE / CARD ================= */
+function setStat(prefix, val){
+  document.getElementById("stat-"+prefix+"-val").textContent = val + "%";
+  document.getElementById("stat-"+prefix+"-bar").style.width = val + "%";
+}
+function renderProfile(){
+  applyAvatarClass();
+  document.getElementById("profile-name").textContent = state.playerName.toUpperCase();
+  document.getElementById("profile-score").textContent = "SAFETY SCORE: " + state.safetyScore;
+  document.getElementById("profile-coins").textContent = "🪙 COINS: " + state.coins;
+  setStat("trap", state.phishingRadar);
+  setStat("link", state.linkSense);
+  setStat("key", state.accountGuard);
+}
+document.getElementById("btn-go-card").addEventListener("click", ()=>{
+  applyAvatarClass();
+  document.getElementById("card-name").textContent = state.playerName.toUpperCase();
+  document.getElementById("card-score").textContent = "SAFETY SCORE " + state.safetyScore;
+  document.getElementById("card-coins").textContent = "🪙 COINS " + state.coins;
+  showScreen("screen-card");
+});
+document.getElementById("btn-play-again").addEventListener("click", ()=>{
+  localStorage.removeItem(STORAGE_KEY);
+  state = defaultState();
+  document.getElementById("input-name").value = "";
+  charCards.forEach(c=>{ c.classList.remove("selected"); c.setAttribute("aria-pressed","false"); });
+  document.getElementById("btn-confirm-char").disabled = true;
+  showScreen("screen-start");
+});
+
+/* ================= RESUME ================= */
+function resume(){
+  if(state.selectedGender){
+    document.querySelectorAll(".char-card").forEach(c=>{
+      if(c.dataset.gender===state.selectedGender){ c.classList.add("selected"); c.setAttribute("aria-pressed","true"); }
+    });
+    document.getElementById("btn-confirm-char").disabled = false;
+  }
+  if(state.playerName) document.getElementById("input-name").value = state.playerName;
+  applyAvatarClass();
+  renderHeaders();
+  if(state.gameOver){ triggerGameOver(); return; }
+  const validScreens = ["screen-start","screen-character","screen-name","screen-home","screen-round-select","screen-profile","screen-card"];
+  const target = validScreens.includes(state.screen) ? state.screen : "screen-start";
+  if(target==="screen-round-select") renderRoundSelect();
+  if(target==="screen-profile") renderProfile();
+  if(target==="screen-home") document.getElementById("home-name").textContent = (state.playerName||"PLAYER").toUpperCase();
+  showScreen(target);
+}
+resume();
+
+})();
+</script>
 </body>
 </html>
